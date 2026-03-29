@@ -29,18 +29,31 @@ async function dbQuery(args, config) {
 }
 
 async function querySqlite(dbPath, sql, params) {
-  // 动态导入避免未安装时报错
-  let Database;
+  const fs = require('fs');
+  let initSqlJs;
   try {
-    Database = require('better-sqlite3');
+    initSqlJs = require('sql.js');
   } catch {
-    throw new Error('SQLite 支持未安装，请运行: npm install better-sqlite3');
+    throw new Error('SQLite 支持未安装，请运行: npm install sql.js');
   }
 
-  const db = new Database(path.resolve(dbPath), { readonly: true });
+  // pkg 打包时 wasm 文件嵌入为 asset，需通过 __dirname 定位
+  const wasmPath = require('path').join(__dirname, '..', '..', 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm');
+  const SQL = await initSqlJs({ locateFile: () => wasmPath });
+  const fileBuffer = fs.readFileSync(path.resolve(dbPath));
+  const db = new SQL.Database(fileBuffer);
   try {
     const stmt = db.prepare(sql);
-    const rows = stmt.all(...params);
+    stmt.bind(params);
+    const rows = [];
+    const columns = stmt.getColumnNames();
+    while (stmt.step()) {
+      const vals = stmt.get();
+      const row = {};
+      columns.forEach((col, i) => { row[col] = vals[i]; });
+      rows.push(row);
+    }
+    stmt.free();
     return { rows, rowCount: rows.length };
   } finally {
     db.close();

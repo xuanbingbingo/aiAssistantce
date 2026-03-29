@@ -2,17 +2,34 @@
   "name": "desktop-agent",
   "version": "1.0.0",
   "main": "src/index.js",
+  "bin": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "build:x64": "pkg . --target node18-macos-x64 --output dist/ai-agent-macos-x64 --compress GZip",
+    "build:arm64": "pkg . --target node18-macos-arm64 --output dist/ai-agent-macos-arm64 --compress GZip",
+    "build": "npm run build:x64 && npm run build:arm64 && node scripts/make-app.js"
+  },
+  "pkg": {
+    "entrypoint": "src/index.js",
+    "assets": [
+      "node_modules/sql.js/dist/sql-wasm.wasm"
+    ],
+    "targets": [
+      "node18-macos-x64",
+      "node18-macos-arm64"
+    ]
   },
   "dependencies": {
-    "better-sqlite3": "^9.4.3",
     "dotenv": "^16.4.5",
     "mysql2": "^3.9.7",
     "openai": "^6.33.0",
     "pdfkit": "^0.15.0",
+    "sql.js": "^1.14.1",
     "uuid": "^9.0.1",
     "ws": "^8.17.1"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.14.1"
   }
 }
