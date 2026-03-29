@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: ai_assistant_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_PASS}"
+      MYSQL_DATABASE: "${DB_NAME}"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./src/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  relay:
+    build: .
+    container_name: ai_assistant_relay
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DB_HOST: mysql
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  mysql_data:

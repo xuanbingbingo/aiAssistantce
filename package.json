@@ -1,0 +1,10 @@
+{
+  "name": "ai-assistant-root",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "relay": "npm -w packages/relay-server run dev",
+    "agent": "npm -w packages/desktop-agent run dev",
+    "install:all": "npm install"
+  }
+}
