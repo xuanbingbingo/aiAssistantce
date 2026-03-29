@@ -186,7 +186,15 @@ async function route(userText, config, executeTool, history = []) {
   const rawResult = await executeTool(tool, args, config);
 
   // Step 3: Qwen 将结果格式化为自然语言摘要
-  const summary = await summarizeResult(qwen, model, userText, systemPrompt, history, assistantMsg, tool, toolCallId, rawResult);
+  // view_image 结果含大体积 base64，跳过 Qwen 摘要避免超出输入长度限制
+  let summary;
+  if (tool === 'view_image') {
+    summary = rawResult.success
+      ? `图片已加载：${rawResult.data.filename}（${(rawResult.data.size / 1024).toFixed(0)} KB）`
+      : `图片加载失败：${rawResult.error}`;
+  } else {
+    summary = await summarizeResult(qwen, model, userText, systemPrompt, history, assistantMsg, tool, toolCallId, rawResult);
+  }
 
   // Step 4: 将本轮对话追加到历史
   _appendHistory(history, userText, summary);

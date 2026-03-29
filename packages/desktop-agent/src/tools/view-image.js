@@ -2,6 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+const { execSync } = require('child_process');
 
 const MIME_MAP = {
   '.jpg': 'image/jpeg',
@@ -11,13 +13,14 @@ const MIME_MAP = {
   '.webp': 'image/webp',
   '.bmp': 'image/bmp',
   '.svg': 'image/svg+xml',
-  '.heic': 'image/heic',
+  '.heic': 'image/jpeg', // sips 会将 heic 转为 jpeg
 };
 
-const MAX_BYTES = 2 * 1024 * 1024; // 2MB 原始文件上限
+const MAX_ORIGINAL_BYTES = 50 * 1024 * 1024; // 原始文件上限 50MB
+const RESIZE_WIDTH = 1200; // 压缩后最大宽度（px）
 
 /**
- * 读取图片文件，返回 base64 data URL
+ * 读取图片文件，自动压缩后返回 base64 data URL
  * @param {{ path: string }} args
  * @param {{ allowedPaths: string[] }} config
  */
@@ -41,19 +44,36 @@ async function viewImage(args, config) {
     throw new Error(`不支持的图片格式: ${ext}，支持 ${Object.keys(MIME_MAP).join(', ')}`);
   }
 
-  if (stat.size > MAX_BYTES) {
-    throw new Error(`图片文件过大（${(stat.size / 1024 / 1024).toFixed(1)} MB），最大支持 2 MB`);
+  if (stat.size > MAX_ORIGINAL_BYTES) {
+    throw new Error(`图片文件过大（${(stat.size / 1024 / 1024).toFixed(1)} MB），最大支持 50 MB`);
   }
 
-  const buffer = fs.readFileSync(targetPath);
+  // 用 sips（macOS 内置）压缩图片到指定宽度，输出为 jpeg
+  const tmpFile = path.join(os.tmpdir(), `ai_agent_img_${Date.now()}.jpg`);
+  try {
+    execSync(
+      `sips -s format jpeg -Z ${RESIZE_WIDTH} "${targetPath}" --out "${tmpFile}"`,
+      { stdio: 'pipe' }
+    );
+  } catch (e) {
+    throw new Error(`图片压缩失败: ${e.message}`);
+  }
+
+  let buffer;
+  try {
+    buffer = fs.readFileSync(tmpFile);
+  } finally {
+    try { fs.unlinkSync(tmpFile); } catch {}
+  }
+
   const base64 = buffer.toString('base64');
-  const dataUrl = `data:${mime};base64,${base64}`;
+  const dataUrl = `data:image/jpeg;base64,${base64}`;
 
   return {
     dataUrl,
     filename: path.basename(targetPath),
-    size: stat.size,
-    mime,
+    size: buffer.length,
+    mime: 'image/jpeg',
   };
 }
 
