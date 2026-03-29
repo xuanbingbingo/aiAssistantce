@@ -1,6 +1,6 @@
 # 本地 AI 助手中控系统 — 项目计划与架构设计
 
-> 最后更新：2026-03-29（对话历史 + 数据库别名）
+> 最后更新：2026-03-29（macOS .app 打包）
 
 ---
 
@@ -349,11 +349,27 @@ WS     /ws?token=<JWT>&deviceId=<UUID>
 
 ---
 
-### Phase 6 — 部署与打包（后续规划）
+### Phase 6 — 桌面端打包 ✅ 已完成
+**目标**：将 Desktop Agent 打包为双击可运行的 macOS 应用
+
+- [x] 替换 `better-sqlite3` → `sql.js`（纯 WebAssembly，无原生模块，支持跨架构打包）
+- [x] 使用 `@yao-pkg/pkg` 打包为独立二进制（Intel x64 / Apple Silicon arm64）
+- [x] `scripts/make-app.js`：自动生成标准 macOS `.app` bundle
+  - Dock 图标显示，右键可退出
+  - Python + sips + iconutil 生成 `AppIcon.icns`（深蓝背景白色 AI 字样）
+  - 从 `~/.local-ai-agent/.env` 读取环境变量（RELAY_URL / AGENT_TOKEN / QWEN_API_KEY 等）
+  - 日志写入 `~/Library/Logs/LocalAI-Agent.log`
+- [x] 输出：`dist/LocalAI Agent (Intel).app` + `dist/LocalAI Agent (Apple Silicon).app`
+
+**构建命令**：`npm run build`（在 `packages/desktop-agent` 目录下）
+
+---
+
+### Phase 7 — 部署与上线（后续规划）
 - [ ] relay-server：生产环境 Nginx 反向代理 + HTTPS/WSS
-- [ ] desktop-agent：使用 `pkg` 打包为可执行文件（Windows/macOS/Linux）
 - [ ] 自动更新机制（桌面端轮询版本号）
 - [ ] 小程序：提交微信审核
+- [ ] 自定义 App 图标（替换 `packages/desktop-agent/assets/icon.png`）
 
 ---
 
@@ -409,3 +425,5 @@ export AI_MODEL=qwen-plus
 | 2026-03-29 | 计划更新：Phase 3 标记完成，新增 Phase 5（AI 自然语言路由）和 Phase 6（部署打包）|
 | 2026-03-29 | Phase 5 完成：ai-router.js（Qwen API，OpenAI 兼容接口），ws-client 自动分路由，miniprogram chat store 适配 ai_result 格式 |
 | 2026-03-29 | 新增 fs_delete 工具；db_query 改为别名模式（dbName）；新增多轮对话历史（ws-client conversationHistory，最近10轮）；创建示例 SQLite 数据库 |
+| 2026-03-29 | 新增 view_image 工具（sips 压缩 + base64）；修复 Qwen 1M 字符限制；小程序图片气泡渲染 |
+| 2026-03-29 | Phase 6 完成：macOS .app 打包（Intel + Apple Silicon），Dock 图标 + 自动生成 icns，.env 配置读取 |
