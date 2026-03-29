@@ -120,6 +120,20 @@ const TOOL_SCHEMAS = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'view_image',
+      description: '查看/打开本地图片文件，支持 jpg、png、gif、webp、bmp、svg 格式，返回可在手机上显示的图片数据',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: { type: 'string', description: '图片文件的绝对路径' },
+        },
+        required: ['path'],
+      },
+    },
+  },
 ];
 
 const HISTORY_MAX = 20; // 最多保留20条消息（约10轮对话）

@@ -66,10 +66,12 @@ export const useChatStore = defineStore('chat', () => {
 
       const idx = messages.value.findIndex(m => m.commandId === commandId)
       if (idx !== -1) {
+        const imageUrl = extractImageUrl(result)
         messages.value[idx] = {
           ...messages.value[idx],
           loading: false,
           content: formatResult(result),
+          imageUrl,
           rawResult: result,
           status,
         }
@@ -100,6 +102,15 @@ export const useChatStore = defineStore('chat', () => {
       return JSON.stringify(data, null, 2)
     }
     return String(data ?? '执行完成')
+  }
+
+  function extractImageUrl(result) {
+    if (!result) return null
+    // ai_result 场景：view_image 工具返回的 data 中含 dataUrl
+    if (result.type === 'ai_result' && result.data?.dataUrl) return result.data.dataUrl
+    // 结构化直接调用场景
+    if (result.success && result.data?.dataUrl) return result.data.dataUrl
+    return null
   }
 
   function clearMessages() {

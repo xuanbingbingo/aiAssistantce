@@ -7,6 +7,7 @@ const fsDelete = require('./tools/fs-delete');
 const dbQuery = require('./tools/db-query');
 const exportPdf = require('./tools/export-pdf');
 const execShell = require('./tools/exec-shell');
+const viewImage = require('./tools/view-image');
 
 const TOOLS = {
   fs_list: fsList,
@@ -16,6 +17,7 @@ const TOOLS = {
   db_query: dbQuery,
   export_pdf: exportPdf,
   exec_shell: execShell,
+  view_image: viewImage,
 };
 
 /**

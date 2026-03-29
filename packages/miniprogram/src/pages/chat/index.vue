@@ -38,7 +38,16 @@
         <view v-if="msg.role === 'assistant'" class="avatar">🤖</view>
         <view :class="['bubble', msg.role === 'user' ? 'bubble-user' : 'bubble-bot']">
           <text v-if="msg.loading" class="loading-dots">执行中...</text>
-          <text v-else class="msg-text">{{ msg.content }}</text>
+          <template v-else>
+            <image
+              v-if="msg.imageUrl"
+              :src="msg.imageUrl"
+              class="msg-image"
+              mode="widthFix"
+              @tap="previewImage(msg.imageUrl)"
+            />
+            <text class="msg-text">{{ msg.content }}</text>
+          </template>
           <text class="msg-time">{{ formatTime(msg.time) }}</text>
         </view>
         <view v-if="msg.role === 'user'" class="avatar avatar-user">👤</view>
@@ -101,6 +110,10 @@ function goDevices() {
 
 function useQuick(text) {
   inputText.value = text
+}
+
+function previewImage(url) {
+  uni.previewImage({ urls: [url], current: url })
 }
 
 function formatTime(t) {
@@ -218,6 +231,12 @@ loadCurrentDevice()
   color: #333;
   border-bottom-left-radius: 4rpx;
   box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
+}
+.msg-image {
+  width: 100%;
+  border-radius: 12rpx;
+  margin-bottom: 12rpx;
+  display: block;
 }
 .msg-text { font-size: 28rpx; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
 .loading-dots { font-size: 28rpx; color: #999; }
