@@ -100,35 +100,42 @@ curl -X POST https://你的域名/ai-relay/api/v1/auth/login \
 
 ### 三、启动桌面 Agent
 
-```bash
-cd packages/desktop-agent
+#### 方式一：直接双击 .app（推荐）
 
-# 配置环境变量（新建 .env 文件）
-cat > .env << EOF
-RELAY_URL=wss://haoyuyun.top/ai-relay   # 中转服务器 WebSocket 地址
+`dist/` 目录已包含打包好的 macOS 应用：
+
+```
+dist/
+├── LocalAI Agent (Apple Silicon).app   # M1/M2/M3 芯片
+└── LocalAI Agent (Intel).app           # Intel 芯片
+```
+
+**第一步：编辑配置文件**
+
+首次运行会自动创建 `~/.local-ai-agent/.env`，也可以直接新建：
+
+```bash
+mkdir -p ~/.local-ai-agent
+cat > ~/.local-ai-agent/.env << EOF
+RELAY_URL=wss://haoyuyun.top/ai-relay
 AGENT_TOKEN=<登录接口返回的 token>
 MASTER_PASSWORD=<自定义主密码，用于 E2EE 加密>
 USER_SALT=<登录接口返回的 salt>
 QWEN_API_KEY=<可选，填写后支持自然语言指令>
 EOF
+```
 
-# 安装依赖并启动
+**第二步：双击对应架构的 .app 启动**
+
+- 日志位置：`~/Library/Logs/LocalAI-Agent.log`
+- 退出方式：Dock 图标右键 → 退出
+
+#### 方式二：命令行（开发者）
+
+```bash
+cd packages/desktop-agent
 npm install
 npm start
-```
-
-启动成功后会输出：
-
-```
-===========================================
-  本地 AI 助手 - Desktop Agent
-===========================================
-  DeviceID  : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  DeviceName: your-mac-name
-  Relay URL : wss://haoyuyun.top/ai-relay
-  AI Router : ✅ 已启用（自然语言模式 / Qwen）
-===========================================
-[Agent] 设备注册成功
 ```
 
 **Desktop Agent 权限配置**（`~/.local-ai-agent/config.json`）：
@@ -152,12 +159,12 @@ npm start
 
 > 安全说明：所有路径、数据库、命令均需明确加入白名单，未授权操作会被拒绝。
 
-**打包为 macOS .app（可选）：**
+**重新打包 .app（仅开发者需要）：**
 
 ```bash
+cd packages/desktop-agent
 npm install
-npm run build         # 生成 x64 + arm64 双架构
-# 产物在 dist/ 目录
+npm run build         # 重新生成 x64 + arm64 双架构到 dist/
 ```
 
 ---
