@@ -1,0 +1,30 @@
+name: Upload Miniprogram
+
+on:
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install miniprogram dependencies
+        run: cd packages/miniprogram && npm ci
+
+      - name: Install miniprogram-ci
+        run: npm install miniprogram-ci
+
+      - name: Write upload private key
+        env:
+          WECHAT_PRIVATE_KEY: ${{ secrets.WECHAT_PRIVATE_KEY }}
+        run: echo "$WECHAT_PRIVATE_KEY" > private.key
+
+      - name: Build and upload to WeChat
+        run: node scripts/mp-upload.js
+        env:
+          WECHAT_APPID: ${{ secrets.WECHAT_APPID }}
