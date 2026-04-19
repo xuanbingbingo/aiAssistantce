@@ -16,6 +16,9 @@ jobs:
       - name: Install miniprogram dependencies
         run: cd packages/miniprogram && npm ci
 
+      - name: Write miniprogram env
+        run: echo "VITE_RELAY_HTTP=https://haoyuyun.top/ai-relay" > packages/miniprogram/.env
+
       - name: Install miniprogram-ci
         run: npm install miniprogram-ci
 
